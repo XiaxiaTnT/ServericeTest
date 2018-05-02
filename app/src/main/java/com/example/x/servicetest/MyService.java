@@ -125,7 +125,7 @@ public class MyService extends Service {
             }
             String str="lat:"+lat+" lng:"+lng+" way:"+way;
             Log.d("location",str);
-            //Toast.makeText(getApplicationContext(),str,Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),str,Toast.LENGTH_SHORT).show();
         }
     }
     public class MyLocationListener implements BDLocationListener{
