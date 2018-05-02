@@ -27,6 +27,7 @@ public class MyService extends Service {
     private AlarmManager manager=null;
     public LocationClient mlocationClient=null;
     public BDLocationListener myListener=new MyLocationListener();
+    private int Times=0;//control for the information to be the second time it get the location information
     public MyService() {
     }
 
@@ -53,7 +54,7 @@ public class MyService extends Service {
         option.setPriority(LocationClientOption.GpsFirst);
         option.setCoorType("bd09ll");
         //option.setIgnoreKillProcess(true);
-        //option.setScanSpan(1000);
+        option.setScanSpan(5000);
         mlocationClient.setLocOption(option);
 
 
@@ -67,6 +68,7 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
+        Times=0;
         Log.d("MyService","onStartCommand executed");
         String data=intent.getStringExtra("data");
 //        Toast.makeText(getApplicationContext(),data,Toast.LENGTH_SHORT).show();
@@ -78,6 +80,7 @@ public class MyService extends Service {
 ////                Looper.loop();
 //            }
 //        }).start();
+        Toast.makeText(getApplicationContext(),"onStartCommand",Toast.LENGTH_SHORT).show();
         mlocationClient.restart();
         if(mlocationClient==null){
             Log.d("client","null");
@@ -88,7 +91,7 @@ public class MyService extends Service {
         mlocationClient.requestLocation();
 
         manager=(AlarmManager)getSystemService(ALARM_SERVICE);
-        int timegap=2*10*1000;
+        int timegap=2*10*1000;//time for the gap
         long triggerAtTime= SystemClock.elapsedRealtime()+timegap;
         Intent i=new Intent(this,MyService.class);
         i.putExtra("data","hi");
@@ -134,8 +137,11 @@ public class MyService extends Service {
             if(bdLocation==null){
                 return;
             }
+            Times=Times+1;
             //mlocationClient.stop();
-            getLocationInfo(bdLocation);
+            if(Times==2) {
+                getLocationInfo(bdLocation);
+            }
         }
     }
 }
