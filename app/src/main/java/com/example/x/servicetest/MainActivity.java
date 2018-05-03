@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.start_service:
                 Intent startIntent=new Intent(this,MyService.class);
-                startIntent.putExtra("data","hello");
+                //startIntent.putExtra("data","hello");
                 startService(startIntent);
                 break;
             case R.id.stop_service:
