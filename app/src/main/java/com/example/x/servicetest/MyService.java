@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.ThemedSpinnerAdapter;
 import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
@@ -33,6 +34,7 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 import static android.widget.Toast.*;
 
@@ -40,6 +42,7 @@ public class MyService extends Service {
     private AlarmManager manager = null;
     public LocationClient mlocationClient = null;
     public BDLocationListener myListener = new MyLocationListener();
+    public String info=null;
     private int Times = 0;//control for the information to be the second time it get the location information
 
     public MyService() {
@@ -134,7 +137,7 @@ public class MyService extends Service {
         if (bdLocation != null) {
             double lat = bdLocation.getLatitude();
             double lng = bdLocation.getLongitude();
-            String way = "";
+            String way = "unkonwn";
             if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
                 way = "Network";
             } else if (bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
@@ -155,39 +158,54 @@ public class MyService extends Service {
 //                return;
 //            }
 //            String Phonenum = telephonyManager.getLine1Number();
-//            PostInfo(lat,lng,Phonenum,way);
+            String Phonenum="";
+            PostInfo(lat,lng,Phonenum,way);
 
         }
     }
     public void PostInfo(double lat,double lng,String Phonenum,String way){
-        Phonenum=Phonenum.substring(3,Phonenum.length());
-        String Info="insert into info values ('"+Phonenum+"','"+lat+"','"+lng+"','"+way+"')";
-        try{
-            URL url=new URL("http://:8080/serverlet/Myservlet");//address unknown
-            HttpURLConnection connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            connection.setRequestProperty("charset","UTF-8");
-            connection.setDoOutput(true);
-            DataOutputStream outputStream=new DataOutputStream(connection.getOutputStream());
-            outputStream.writeBytes(Info);
-            if(connection.getResponseCode()==200){
-                InputStream inputStream=connection.getInputStream();
-                BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder stringBuilder=new StringBuilder();
-                String line;
-                while((line=reader.readLine())!=null){
-                    stringBuilder.append(line);
+        Toast.makeText(getApplicationContext(),"inPostinfo",Toast.LENGTH_SHORT).show();
+        //Phonenum=Phonenum.substring(3,Phonenum.length());
+        Phonenum="18795865708";
+        //get data
+        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String date=simpleDateFormat.format(new java.util.Date());
+        info="insert into info values ('"+date+"','"+Phonenum+"','"+lat+"','"+lng+"','"+way+"')";
+        Log.d("info",info);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    URL url=new URL("http://120.79.46.162:8080/serverlet/MyServlet");//address unknown
+                    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(5000);
+                    connection.setRequestProperty("charset","UTF-8");
+                    connection.setDoOutput(true);
+                    DataOutputStream outputStream=new DataOutputStream(connection.getOutputStream());
+                    outputStream.writeBytes(info);
+                    if(connection.getResponseCode()==200){
+                        InputStream inputStream=connection.getInputStream();
+                        BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream));
+                        StringBuilder stringBuilder=new StringBuilder();
+                        String line;
+                        while((line=reader.readLine())!=null){
+                            stringBuilder.append(line);
+                        }
+                        reader.close();
+                    }
+                    outputStream.close();
+                }catch (MalformedURLException e){
+                    //e.printStackTrace();
+                    e.getMessage();
+                }catch (IOException e){
+                    //e.printStackTrace();
+                    e.getMessage();
                 }
-                reader.close();
             }
-            outputStream.close();
-        }catch (MalformedURLException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        }).start();
+
     }
     public class MyLocationListener implements BDLocationListener{
         @Override
