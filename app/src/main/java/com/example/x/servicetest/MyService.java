@@ -27,6 +27,7 @@ import com.baidu.location.LocationClientOption;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -86,17 +87,6 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Times = 0;
         Log.d("MyService", "onStartCommand executed");
-//        String data = intent.getStringExtra("data");
-//        Toast.makeText(getApplicationContext(),data,Toast.LENGTH_SHORT).show();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-////                Looper.prepare();
-////                Toast.makeText(getApplicationContext(),"running", Toast.LENGTH_LONG).show();
-////                Looper.loop();
-//            }
-//        }).start();
-//        Toast.makeText(getApplicationContext(), "onStartCommand", Toast.LENGTH_SHORT).show();
         mlocationClient.restart();
         if (mlocationClient == null) {
             Log.d("client", "null");
@@ -107,19 +97,18 @@ public class MyService extends Service {
         mlocationClient.requestLocation();
 
         manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int timegap = 20 * 1000;//time for the gap
+        int timegap = 60 * 1000;//time for the gap
         long triggerAtTime = SystemClock.elapsedRealtime() + timegap;
         Intent i = new Intent(this, MyService.class);
-        //i.putExtra("data", "hi");
         PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
         manager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi);
         return super.onStartCommand(intent, flags, startId);
-        //return Service.START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         stopForeground(true);
+        //restart when destoryed
         //Intent intent=new Intent("com.example.x.servicetest.destory");
         //sendBroadcast(intent);.
         Intent i = new Intent(this, MyService.class);
@@ -143,9 +132,9 @@ public class MyService extends Service {
             } else if (bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
                 way = "GPS";
             }
-            String str = "lat:" + lat + " lng:" + lng + " way:" + way;
-            Log.d("location", str);
-            Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
+            //String str = "lat:" + lat + " lng:" + lng + " way:" + way;
+            //Log.d("location", str);
+            //Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
 //            TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 //            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
 //                // TODO: Consider calling
@@ -158,19 +147,42 @@ public class MyService extends Service {
 //                return;
 //            }
 //            String Phonenum = telephonyManager.getLine1Number();
-            String Phonenum="";
-            PostInfo(lat,lng,Phonenum,way);
+            //String Phonenum="";
+            PostInfo(lat,lng,way);
 
         }
     }
-    public void PostInfo(double lat,double lng,String Phonenum,String way){
-        Toast.makeText(getApplicationContext(),"inPostinfo",Toast.LENGTH_SHORT).show();
-        //Phonenum=Phonenum.substring(3,Phonenum.length());
-        Phonenum="18795865708";
-        //get data
+    public String load(){
+        FileInputStream in=null;
+        BufferedReader reader=null;
+        StringBuilder content=new StringBuilder();
+        try {
+            in=openFileInput("data");
+            reader=new BufferedReader(new InputStreamReader(in));
+            String line="";
+            while ((line=reader.readLine())!=null){
+                content.append(line);
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(reader!=null){
+                try {
+                    reader.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return content.toString();
+    }
+    public void PostInfo(double lat,double lng,String way){
+        String StudentID=load();
+       //Phonenum="12345678910";
+        //get date
         SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String date=simpleDateFormat.format(new java.util.Date());
-        info="insert into info values ('"+date+"','"+Phonenum+"','"+lat+"','"+lng+"','"+way+"')";
+        info="insert into info values ('"+date+"','"+StudentID+"','"+lat+"','"+lng+"','"+way+"')";
         Log.d("info",info);
         new Thread(new Runnable() {
             @Override
