@@ -1,24 +1,15 @@
 package com.example.x.servicetest;
 
-import android.Manifest;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.ThemedSpinnerAdapter;
-import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -31,13 +22,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 
-import static android.widget.Toast.*;
 
 public class MyService extends Service {
     private AlarmManager manager = null;
@@ -97,7 +86,7 @@ public class MyService extends Service {
         mlocationClient.requestLocation();
 
         manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int timegap = 60 * 1000;//time for the gap
+        int timegap = 10*60 * 1000;//time for the gap
         long triggerAtTime = SystemClock.elapsedRealtime() + timegap;
         Intent i = new Intent(this, MyService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
@@ -132,22 +121,6 @@ public class MyService extends Service {
             } else if (bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
                 way = "GPS";
             }
-            //String str = "lat:" + lat + " lng:" + lng + " way:" + way;
-            //Log.d("location", str);
-            //Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
-//            TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                return;
-//            }
-//            String Phonenum = telephonyManager.getLine1Number();
-            //String Phonenum="";
             PostInfo(lat,lng,way);
 
         }
@@ -178,9 +151,8 @@ public class MyService extends Service {
     }
     public void PostInfo(double lat,double lng,String way){
         String StudentID=load();
-       //Phonenum="12345678910";
         //get date
-        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String date=simpleDateFormat.format(new java.util.Date());
         info="insert into info values ('"+date+"','"+StudentID+"','"+lat+"','"+lng+"','"+way+"')";
         Log.d("info",info);
@@ -229,6 +201,7 @@ public class MyService extends Service {
             //mlocationClient.stop();
             if(Times==2) {
                 getLocationInfo(bdLocation);
+                mlocationClient.stop();
             }
         }
     }

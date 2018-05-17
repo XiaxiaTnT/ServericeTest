@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent startIntent=new Intent(this,MyService.class);
                 //startIntent.putExtra("data","hello");
                 startService(startIntent);
+                finish();
                 break;
             case R.id.stop_service:
                 Intent stopIntent=new Intent(this,MyService.class);
