@@ -86,7 +86,7 @@ public class MyService extends Service {
         mlocationClient.requestLocation();
 
         manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int timegap = 10*60 * 1000;//time for the gap
+        int timegap = 20*60 * 1000;//time for the gap
         long triggerAtTime = SystemClock.elapsedRealtime() + timegap;
         Intent i = new Intent(this, MyService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
